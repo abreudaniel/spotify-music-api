@@ -1,4 +1,3 @@
-/*
 package com.desafio.luizalabs.api.service;
 
 import com.desafio.luizalabs.api.spotify.restclient.*;
@@ -12,7 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class SpotifyService {
     private final SpotifyAuthClient authClient;
     private final SpotifyUserClient spotifyUserClient;
@@ -68,11 +66,15 @@ public class SpotifyService {
                 .build()
                 .toUriString();
 
+        System.out.println("New Service authorizeUrl:: " + authorizeUrl);
+
         return new AuthorizeResponse(authorizeUrl);
     }
 
     public SpotifyAuthResponse createToken(String code, String codeVerifier) {
+
         Map<String, String> params = exchangeCodeForToken(code, codeVerifier);
+
         SpotifyAuthRequest spotifyAuthRequest = new SpotifyAuthRequest(
                 params.get("grant_type"),
                 params.get("client_id"),
@@ -80,6 +82,8 @@ public class SpotifyService {
                 params.get("redirect_uri"),
                 codeVerifier
         );
+
+        System.out.println("New Service createToken:: " + spotifyAuthRequest.toString() );
 
         return authClient.createToken(spotifyAuthRequest);
     }
@@ -132,4 +136,3 @@ public class SpotifyService {
     }
 
 }
-*/

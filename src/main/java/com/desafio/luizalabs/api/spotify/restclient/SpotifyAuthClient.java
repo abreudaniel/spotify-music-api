@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface SpotifyAuthClient {
 
       @PostMapping(value = "/api/token",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-      SpotifyAuthResponse authToken(@RequestBody SpotifyAuthRequest authRequest);
+      SpotifyAuthResponse createToken(@RequestBody SpotifyAuthRequest authRequest);
 
       @GetMapping(value = "/authorize")
       ResponseEntity<Void> authorize(@RequestParam SpotifyAuthorizeRequest authorizeRequest);

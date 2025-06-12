@@ -1,7 +1,9 @@
 package com.desafio.luizalabs.api.rest;
 
 import com.desafio.luizalabs.api.service.PKCEMemcachedService;
+import com.desafio.luizalabs.api.service.PKCESessionService;
 import com.desafio.luizalabs.api.service.SpotifyAuthService;
+import com.desafio.luizalabs.api.service.SpotifyService;
 import com.desafio.luizalabs.api.spotify.restclient.*;
 import com.desafio.luizalabs.api.spotify.utils.PkceUtils;
 import org.springframework.http.ResponseEntity;
@@ -17,21 +19,15 @@ import java.util.Map;
 @CrossOrigin(origins = "${app.cors.allowed-origins}")
 public class SpotifyAuthController {
 
-    private final SpotifyAuthClient authClient;
-    private final SpotifyAuthService spotifyAuthService;
-    //private final SpotifyUserClient spotifyUserClient;
-    //private final PKCESessionService pkceSessionService;
     private final PKCEMemcachedService pkceMemcachedService;
+    private final SpotifyService spotifyService;
 
 
-    public SpotifyAuthController(SpotifyAuthClient authClient,
-                                 SpotifyAuthService spotifyAuthService,
-                                 PKCEMemcachedService pkceMemcachedService
+    public SpotifyAuthController(PKCEMemcachedService pkceMemcachedService,
+                                 SpotifyService spotifyService
     ) {
-        this.authClient = authClient;
-        this.spotifyAuthService = spotifyAuthService;
         this.pkceMemcachedService = pkceMemcachedService;
-
+        this.spotifyService = spotifyService;
     }
 
     @GetMapping("/login")
@@ -40,39 +36,14 @@ public class SpotifyAuthController {
         String codeVerifier = PkceUtils.generateCodeVerifier();
         String state = generateState();
 
-        // Armazenar o code_verifier (em produção, use Redis ou Memcached)
+        // Salva na sessão(Redis)
+        //pkceSessionService.saveCodeVerifier(state, codeVerifier);
+        // Armazenar o code_verifier (Memcached)
         pkceMemcachedService.storeCodeVerifier(state, codeVerifier);
+        System.out.println("login codeVerifier Memcached:: ");
+        AuthorizeResponse authorizeResponse = spotifyService.authorize(codeVerifier, state);
 
-
-        System.out.println("login codeVerifier:: " + codeVerifier + " state:: " + state);
-
-        // Obter parâmetros de autorização
-        Map<String, String> params = spotifyAuthService.getSpotifyAuthorizeParams(codeVerifier);
-
-        // Construir a URL de autorização
-        var authorizeRequest = new SpotifyAuthorizeRequest(
-                params.get("client_id"),
-                params.get("response_type"),
-                params.get("redirect_uri"),
-                params.get("scope"),
-                params.get("code_challenge_method"),
-                params.get("code_challenge")
-        );
-
-        // Construir a URL final
-        String authorizeUrl = UriComponentsBuilder
-                .fromHttpUrl("https://accounts.spotify.com/authorize")
-                .queryParam("client_id", params.get("client_id"))
-                .queryParam("response_type", params.get("response_type"))
-                .queryParam("redirect_uri", params.get("redirect_uri"))
-                .queryParam("scope", params.get("scope"))
-                .queryParam("code_challenge_method", params.get("code_challenge_method"))
-                .queryParam("code_challenge", params.get("code_challenge"))
-                .queryParam("state", state)
-                .build()
-                .toUriString();
-
-        return ResponseEntity.ok(new AuthorizeResponse(authorizeUrl));
+        return ResponseEntity.ok(authorizeResponse);
     }
 
     @GetMapping("/callback")
@@ -81,27 +52,18 @@ public class SpotifyAuthController {
             @RequestParam String state
     ) {
 
-        System.out.println("callback state:: " + state);
+        // Recupera o code verifier da sessão (Redis)
+        //String codeVerifierSession = pkceSessionService.getCodeVerifier(state);
 
         // Recuperar o code_verifier do Memcached
         String codeVerifier = pkceMemcachedService.getCodeVerifier(state)
                 .orElseThrow(() -> new IllegalStateException("Estado inválido ou expirado"));
 
-        // Trocar o código por um token
-        Map<String, String> tokenParams = spotifyAuthService
-                .exchangeCodeForToken(code, codeVerifier);
+        System.out.println("Callback codeVerifier Memcached:: " + codeVerifier + " state::  " + state);
 
-        var response = authClient.authToken(new SpotifyAuthRequest(
-                tokenParams.get("grant_type"),
-                tokenParams.get("client_id"),
-                code,
-                tokenParams.get("redirect_uri"),
-                codeVerifier
-        ));
+        SpotifyAuthResponse spotifyAuthResponse = spotifyService.createToken(code, codeVerifier);
 
-        System.out.println("response CallBack:: " + response.toString());
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(spotifyAuthResponse);
     }
 
     private String generateState() {
