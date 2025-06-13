@@ -1,18 +1,14 @@
 package com.desafio.luizalabs.api.rest;
 
 import com.desafio.luizalabs.api.service.PKCEMemcachedService;
-import com.desafio.luizalabs.api.service.PKCESessionService;
-import com.desafio.luizalabs.api.service.SpotifyAuthService;
 import com.desafio.luizalabs.api.service.SpotifyService;
 import com.desafio.luizalabs.api.spotify.restclient.*;
 import com.desafio.luizalabs.api.spotify.utils.PkceUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")

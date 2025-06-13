@@ -2,7 +2,6 @@ package com.desafio.luizalabs.api.service;
 
 import com.desafio.luizalabs.api.spotify.restclient.*;
 import com.desafio.luizalabs.api.spotify.utils.PkceUtils;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -13,7 +12,6 @@ import java.util.Map;
 @Service
 public class SpotifyService {
     private final SpotifyAuthClient authClient;
-    private final SpotifyUserClient spotifyUserClient;
 
     @Value("${spotify.client-id}")
     private String clientId;
@@ -33,13 +31,8 @@ public class SpotifyService {
     @Value("${spotify.scope}")
     private String scope;
 
-    public SpotifyService(SpotifyAuthClient authClient, SpotifyUserClient spotifyUserClient) {
+    public SpotifyService(SpotifyAuthClient authClient) {
         this.authClient = authClient;
-        this.spotifyUserClient = spotifyUserClient;
-    }
-
-    public SpotifyProfileResponse getProfile() {
-        return spotifyUserClient.getProfile();
     }
 
     public AuthorizeResponse authorize(String codeVerifier, String state) {
