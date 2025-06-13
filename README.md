@@ -122,6 +122,22 @@ API REST desenvolvida para interagir com a API do Spotify, permitindo buscar art
 ## 📡 Endpoints da API
 
 ### Autenticação
-- `POST /api/token`: Gera token de acesso
-- `GET /authorize`: Gera a autorização
+
+- `POST /api/token`: Gerar token de acesso
+- `GET /authorize`: Iniciar fluxo de autorização
+- `GET /callback`: Callback da autorização OAuth
+
+## 📝 Notas Importantes
+
+- A aplicação utiliza Redis para gerenciamento de sessões
+- Memcached é utilizado para cache de dados
+- O tempo de sessão está configurado para 600 segundos
+- CORS está configurado para permitir requisições de localhost nas portas 3000 e 8080
+
+
+## 🔐 Segurança
+- Autenticação OAuth 2.0 com Spotify
+- CORS configurado para ambientes específicos
+- Cache distribuído com Memcached
+
 
