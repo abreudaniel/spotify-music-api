@@ -14,12 +14,15 @@ public class PkceUtils {
 
     public static String generateCodeChallenge(String codeVerifier) {
         try {
+            if(codeVerifier == null || codeVerifier.isEmpty()) {
+                throw new IllegalStateException("Code verifier não encontrado ou expirado");
+            }
             byte[] bytes = codeVerifier.getBytes("UTF-8");
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(bytes);
             return Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao gerar code challenge", e);
+            throw new IllegalStateException("Erro ao gerar code challenge", e);
         }
     }
 
