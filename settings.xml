@@ -1,0 +1,13 @@
+<settings>
+    <profiles>
+        <profile>
+            <id>sonar</id>
+            <properties>
+                <sonar.token>ecc08e8b57bec5b1b6c73a51295797c22caca5b4</sonar.token>
+            </properties>
+        </profile>
+    </profiles>
+    <activeProfiles>
+        <activeProfile>sonar</activeProfile>
+    </activeProfiles>
+</settings>
